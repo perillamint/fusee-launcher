@@ -33,6 +33,7 @@ import errno
 import ctypes
 import argparse
 import platform
+import binascii
 
 # The address where the RCM payload is placed.
 # This is fixed for most device.
@@ -574,6 +575,7 @@ parser.add_argument('--override-os', metavar='platform', dest='platform', type=s
 parser.add_argument('--relocator', metavar='binary', dest='relocator', type=str, default="%s/intermezzo.bin" % os.path.dirname(os.path.abspath(__file__)), help='provides the path to the intermezzo relocation stub')
 parser.add_argument('--override-checks', dest='skip_checks', action='store_true', help="don't check for a supported controller; useful if you've patched your EHCI driver")
 parser.add_argument('--allow-failed-id', dest='permissive_id', action='store_true', help="continue even if reading the device's ID fails; useful for development but not for end users")
+parser.add_argument('--tty', dest='tty_mode', action='store_true', help="Enable TTY mode after payload launch")
 arguments = parser.parse_args()
 
 # Expand out the payload path to handle any user-refrences.
@@ -690,3 +692,11 @@ except IOError:
     print("The USB device stopped responding-- sure smells like we've smashed its stack. :)")
     print("Launch complete!")
 
+if arguments.tty_mode:
+    while True:
+        buf = switch.read(0x1000)
+        print(binascii.hexlify(buf))
+        try:
+            print(buf.decode('utf-8'))
+        except UnicodeDecodeError:
+            pass
