@@ -642,6 +642,13 @@ with open(payload_path, "rb") as f:
 
 # Fit a collection of the payload before the stack spray...
 padding_size   = STACK_SPRAY_START - PAYLOAD_START_ADDR
+
+if len(target_payload) <= padding_size:
+    # Add NOP tail to correct heap spray location
+    tail_len = padding_size - len(target_payload)
+    print(f"Padding payload with {tail_len} byte of zeroes")
+    target_payload += bytearray(tail_len)
+
 payload += target_payload[:padding_size]
 
 # ... insert the stack spray...
